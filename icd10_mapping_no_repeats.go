@@ -1,6 +1,3 @@
-// Reads:  map[int][][]int  (eid -> visits in order -> slice of ICD code indices)
-// Writes: map[int][][]int  with each visit containing only NEW codes since prior visits.
-
 package main
 
 import (
@@ -31,22 +28,21 @@ func dedupeAndSort(codes []int) []int {
 	return out
 }
 
-// Given a patient's visits (chronological), keep only codes that were NOT in the
+// Given a patient's visits (chronological), keep only codes that were not in the
 // immediately previous visit.
 func keepNewPerVisit(visits [][]int) [][]int {
 	result := make([][]int, 0, len(visits))
 
-	// prevSet holds the codes present in the previous (deduped) visit
 	prevSet := map[int]struct{}{}
 
 	for i, v := range visits {
 		v = dedupeAndSort(v) // clean current visit
 
 		if i == 0 {
-			// First visit: nothing to compare to; keep all (after dedupe)
+			// First visit: nothing to compare to; keep all
 			result = append(result, append([]int(nil), v...))
 		} else {
-			// Keep only codes NOT in previous visit
+			// Keep only codes not in previous visit
 			newCodes := make([]int, 0, len(v))
 			for _, c := range v {
 				if _, ok := prevSet[c]; !ok {
@@ -56,7 +52,6 @@ func keepNewPerVisit(visits [][]int) [][]int {
 			result = append(result, newCodes)
 		}
 
-		// Update prevSet to the *raw current visit’s* deduped codes
 		prevSet = make(map[int]struct{}, len(v))
 		for _, c := range v {
 			prevSet[c] = struct{}{}
